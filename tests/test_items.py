@@ -9,13 +9,11 @@ from app.models import Item
 TEST_DB = "sqlite:///./test.db"
 
 def setup_module():
-    # fresh test db each run
     if os.path.exists("test.db"):
         os.remove("test.db")
     engine = create_engine(TEST_DB, connect_args={"check_same_thread": False})
     SQLModel.metadata.create_all(engine)
 
-    # override FastAPI dependency to use test engine
     def _get_session():
         engine_local = create_engine(TEST_DB, connect_args={"check_same_thread": False})
         with Session(engine_local) as session:
@@ -25,24 +23,12 @@ def setup_module():
 @pytest.mark.asyncio
 async def test_items_crud():
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        # empty list
-        r = await ac.get("/items")
-        assert r.status_code == 200
-        assert r.json() == []
-
+        # list empty
+        r = await ac.get("/items"); assert r.status_code == 200; assert r.json() == []
         # create
-        r = await ac.post("/items", json={"name": "widget", "description": "first one"})
-        assert r.status_code == 201
-        data = r.json()
-        assert data["id"] >= 1 and data["name"] == "widget"
-
+        r = await ac.post("/items", json={"name":"widget","description":"first"}); assert r.status_code == 201
+        data = r.json(); item_id = data["id"]; assert data["name"] == "widget"
         # list has one
-        r = await ac.get("/items")
-        assert r.status_code == 200
-        assert len(r.json()) == 1
-
+        r = await ac.get("/items"); assert r.status_code == 200; assert len(r.json()) == 1
         # fetch by id
-        item_id = data["id"]
-        r = await ac.get(f"/items/{item_id}")
-        assert r.status_code == 200
-        assert r.json()["name"] == "widget"
+        r = await ac.get(f"/items/{item_id}"); assert r.status_code == 200; assert r.json()["id"] == item_id

@@ -11,3 +11,14 @@ docker compose up --build
 ## Endpoints
 - `GET /` → hello
 - `GET /health` → `{ "status": "ok" }`
+
+## Developer shortcuts
+```
+make run   # compose up --build
+make up    # start detached
+make down  # stop
+make logs  # tail logs
+make test  # run pytest
+make lint  # black + ruff
+```
+
