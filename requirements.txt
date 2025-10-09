@@ -10,3 +10,8 @@ alembic
 alembic
 
 prometheus-fastapi-instrumentator
+
+fastapi-limiter
+redis
+asgi-correlation-id
+python-json-logger

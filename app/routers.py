@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi_limiter.depends import RateLimiter
 from sqlmodel import select, Session
 from sqlalchemy import or_
 from .models import Item
@@ -7,7 +8,7 @@ from .schemas import ItemRead, ItemCreate
 
 router = APIRouter(prefix="/v1", tags=["items"])
 
-@router.get("/items", response_model=list[ItemRead])
+@router.get("/items", response_model=list[ItemRead], dependencies=[Depends(RateLimiter(times=60, seconds=60))])
 def list_items(
     q: str | None = Query(None, description="Search in name/description"),
     limit: int = Query(50, ge=1, le=200),
@@ -21,7 +22,7 @@ def list_items(
     stmt = stmt.offset(offset).limit(limit)
     return session.exec(stmt).all()
 
-@router.post("/items", status_code=201, response_model=ItemRead)
+@router.post("/items", status_code=201, response_model=ItemRead, dependencies=[Depends(RateLimiter(times=20, seconds=60))])
 def create_item(payload: ItemCreate, session: Session = Depends(get_session)):
     item = Item.model_validate(payload)
     session.add(item)

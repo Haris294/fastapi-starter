@@ -3,6 +3,8 @@ from pydantic_settings import BaseSettings
 from pydantic import field_validator
 
 class Settings(BaseSettings):
+    redis_url: str = "redis://redis:6379/0"
+    rate_limit: str = "20/minute"
     allowed_origins: List[str] = ["*"]      # CSV in env: "https://foo.com,https://bar.com"
     log_level: str = "info"                 # info | warning | error | debug
     uvicorn_workers: int = 2
