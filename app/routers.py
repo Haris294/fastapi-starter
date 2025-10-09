@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi_limiter.depends import RateLimiter
+from fastapi_limiter.depends import RateLimiter
 from sqlmodel import select, Session
 from sqlalchemy import or_
 from .models import Item
