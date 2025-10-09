@@ -11,6 +11,7 @@ def setup_module():
         os.remove("test.db")
     engine = create_engine(TEST_DB, connect_args={"check_same_thread": False})
     SQLModel.metadata.create_all(engine)
+
     def _get_session():
         engine_local = create_engine(TEST_DB, connect_args={"check_same_thread": False})
         with Session(engine_local) as session:
@@ -20,10 +21,16 @@ def setup_module():
 @pytest.mark.asyncio
 async def test_items_crud():
     async with AsyncClient(app=app, base_url="http://test") as ac:
+        # list empty
         r = await ac.get("/items"); assert r.status_code == 200 and r.json() == []
+        # create
         r = await ac.post("/items", json={"name":"widget","description":"first"}); assert r.status_code == 201
         iid = r.json()["id"]
+        # update
         r = await ac.put(f"/items/{iid}", json={"name":"widget2","description":"updated"}); assert r.status_code == 200
+        # get
         r = await ac.get(f"/items/{iid}"); assert r.status_code == 200 and r.json()["name"] == "widget2"
+        # delete
         r = await ac.delete(f"/items/{iid}"); assert r.status_code == 204
+        # confirm 404
         r = await ac.get(f"/items/{iid}"); assert r.status_code == 404
