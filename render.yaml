@@ -5,7 +5,7 @@ services:
   plan: free
   docker:
     image: ghcr.io/haris294/fastapi-starter:latest
-  healthCheckPath: /health
+  healthCheckPath: /ready
   autoDeploy: true
   envVars:
   - key: DATABASE_URL

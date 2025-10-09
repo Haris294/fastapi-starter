@@ -18,6 +18,8 @@ services:
   api:
     build: .
     env_file: .env
+    environment:
+      - PYTHONPATH=/app
     ports:
       - "8000:8000"
     volumes:
@@ -25,6 +27,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://localhost:8000/health').getcode()==200 else sys.exit(1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
 volumes:
   pgdata:
