@@ -22,3 +22,26 @@ def get_item(item_id: int, session: Session = Depends(get_session)):
     if not item:
         raise HTTPException(status_code=404, detail="Not found")
     return item
+
+from .schemas import ItemCreate, ItemRead  # already present above
+
+@router.put("/items/{item_id}", response_model=ItemRead)
+def update_item(item_id: int, payload: ItemCreate, session: Session = Depends(get_session)):
+    item = session.get(Item, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Not found")
+    item.name = payload.name
+    item.description = payload.description
+    session.add(item)
+    session.commit()
+    session.refresh(item)
+    return item
+
+@router.delete("/items/{item_id}", status_code=204)
+def delete_item(item_id: int, session: Session = Depends(get_session)):
+    item = session.get(Item, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Not found")
+    session.delete(item)
+    session.commit()
+    return None

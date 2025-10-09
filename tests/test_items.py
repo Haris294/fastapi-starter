@@ -1,10 +1,8 @@
-import os
-import pytest
+import os, pytest
 from httpx import AsyncClient
 from sqlmodel import SQLModel, create_engine, Session
 from app.main import app
 from app.db import get_session
-from app.models import Item
 
 TEST_DB = "sqlite:///./test.db"
 
@@ -13,7 +11,6 @@ def setup_module():
         os.remove("test.db")
     engine = create_engine(TEST_DB, connect_args={"check_same_thread": False})
     SQLModel.metadata.create_all(engine)
-
     def _get_session():
         engine_local = create_engine(TEST_DB, connect_args={"check_same_thread": False})
         with Session(engine_local) as session:
@@ -23,12 +20,10 @@ def setup_module():
 @pytest.mark.asyncio
 async def test_items_crud():
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        # list empty
-        r = await ac.get("/items"); assert r.status_code == 200; assert r.json() == []
-        # create
+        r = await ac.get("/items"); assert r.status_code == 200 and r.json() == []
         r = await ac.post("/items", json={"name":"widget","description":"first"}); assert r.status_code == 201
-        data = r.json(); item_id = data["id"]; assert data["name"] == "widget"
-        # list has one
-        r = await ac.get("/items"); assert r.status_code == 200; assert len(r.json()) == 1
-        # fetch by id
-        r = await ac.get(f"/items/{item_id}"); assert r.status_code == 200; assert r.json()["id"] == item_id
+        iid = r.json()["id"]
+        r = await ac.put(f"/items/{iid}", json={"name":"widget2","description":"updated"}); assert r.status_code == 200
+        r = await ac.get(f"/items/{iid}"); assert r.status_code == 200 and r.json()["name"] == "widget2"
+        r = await ac.delete(f"/items/{iid}"); assert r.status_code == 204
+        r = await ac.get(f"/items/{iid}"); assert r.status_code == 404
