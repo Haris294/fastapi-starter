@@ -4,3 +4,9 @@ uvicorn[standard]
 sqlmodel
 psycopg2-binary
 pydantic-settings
+
+alembic
+
+alembic
+
+prometheus-fastapi-instrumentator

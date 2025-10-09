@@ -1,5 +1,5 @@
 import os, pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from sqlmodel import SQLModel, create_engine, Session
 from app.main import app
 from app.db import get_session
@@ -20,7 +20,8 @@ def setup_module():
 
 @pytest.mark.asyncio
 async def test_items_crud():
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         # list empty
         r = await ac.get("/v1/items"); assert r.status_code == 200 and r.json() == []
         # create
