@@ -12,6 +12,9 @@ services:
     fromDatabase:
       name: fastapi-db
       property: internalConnectionString
+  # Optional: set REDIS_URL if you have Upstash/Render Redis later.
+  # - key: REDIS_URL
+  #   value: <your-redis-url>
 
 databases:
 - name: fastapi-db
