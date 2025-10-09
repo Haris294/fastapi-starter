@@ -1,5 +1,6 @@
 import os, pytest
 from httpx import AsyncClient, ASGITransport
+from asgi_lifespan import LifespanManager
 from sqlmodel import SQLModel, create_engine, Session
 from app.main import app
 from app.db import get_session
@@ -20,18 +21,19 @@ def setup_module():
 
 @pytest.mark.asyncio
 async def test_items_crud():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # list empty
-        r = await ac.get("/v1/items"); assert r.status_code == 200 and r.json() == []
-        # create
-        r = await ac.post("/v1/items", json={"name":"widget","description":"first"}); assert r.status_code == 201
-        iid = r.json()["id"]
-        # update
-        r = await ac.put(f"/v1/items/{iid}", json={"name":"widget2","description":"updated"}); assert r.status_code == 200
-        # get
-        r = await ac.get(f"/v1/items/{iid}"); assert r.status_code == 200 and r.json()["name"] == "widget2"
-        # delete
-        r = await ac.delete(f"/v1/items/{iid}"); assert r.status_code == 204
-        # confirm 404
-        r = await ac.get(f"/v1/items/{iid}"); assert r.status_code == 404
+    async with LifespanManager(app):
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            # list empty
+            r = await ac.get("/v1/items"); assert r.status_code == 200 and r.json() == []
+            # create
+            r = await ac.post("/v1/items", json={"name":"widget","description":"first"}); assert r.status_code == 201
+            iid = r.json()["id"]
+            # update
+            r = await ac.put(f"/v1/items/{iid}", json={"name":"widget2","description":"updated"}); assert r.status_code == 200
+            # get
+            r = await ac.get(f"/v1/items/{iid}"); assert r.status_code == 200 and r.json()["name"] == "widget2"
+            # delete
+            r = await ac.delete(f"/v1/items/{iid}"); assert r.status_code == 204
+            # confirm 404
+            r = await ac.get(f"/v1/items/{iid}"); assert r.status_code == 404
