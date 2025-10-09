@@ -22,15 +22,15 @@ def setup_module():
 async def test_items_crud():
     async with AsyncClient(app=app, base_url="http://test") as ac:
         # list empty
-        r = await ac.get("/items"); assert r.status_code == 200 and r.json() == []
+        r = await ac.get("/v1/items"); assert r.status_code == 200 and r.json() == []
         # create
-        r = await ac.post("/items", json={"name":"widget","description":"first"}); assert r.status_code == 201
+        r = await ac.post("/v1/items", json={"name":"widget","description":"first"}); assert r.status_code == 201
         iid = r.json()["id"]
         # update
-        r = await ac.put(f"/items/{iid}", json={"name":"widget2","description":"updated"}); assert r.status_code == 200
+        r = await ac.put(f"/v1/items/{iid}", json={"name":"widget2","description":"updated"}); assert r.status_code == 200
         # get
-        r = await ac.get(f"/items/{iid}"); assert r.status_code == 200 and r.json()["name"] == "widget2"
+        r = await ac.get(f"/v1/items/{iid}"); assert r.status_code == 200 and r.json()["name"] == "widget2"
         # delete
-        r = await ac.delete(f"/items/{iid}"); assert r.status_code == 204
+        r = await ac.delete(f"/v1/items/{iid}"); assert r.status_code == 204
         # confirm 404
-        r = await ac.get(f"/items/{iid}"); assert r.status_code == 404
+        r = await ac.get(f"/v1/items/{iid}"); assert r.status_code == 404
