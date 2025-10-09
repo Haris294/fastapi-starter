@@ -1,18 +1,28 @@
-run:        ## dev server in Docker
-	docker compose up --build
-up:         ## start detached
-	docker compose up -d
-down:       ## stop containers
-	docker compose down
-logs:       ## tail logs
-	docker compose logs -f
-ps:         ## show services
-	docker compose ps
-test:       ## run tests locally
-	pytest -q
-lint:       ## format & lint
-	python -m pip install -U black ruff >/dev/null && black . && ruff .
-dbshell:    ## psql into dev DB
-	docker compose exec db psql -U app -d app
-shell:      ## shell in API container
-	docker compose exec api sh
+.PHONY: up down logs ps test fmt lint migrate rev
+
+up:          ## build & start
+\tdocker compose up -d --build
+
+down:        ## stop & remove
+\tdocker compose down
+
+logs:        ## tail API logs
+\tdocker compose logs -f api
+
+ps:          ## list services
+\tdocker compose ps
+
+test:        ## run test suite in container
+\tdocker compose exec api sh -lc 'pip install -q -r requirements-dev.txt || true; pytest -q'
+
+fmt:         ## black + ruff --fix in container
+\tdocker compose exec api sh -lc 'pip install -q black ruff; black . && ruff check . --fix'
+
+lint:        ## ruff check only
+\tdocker compose exec api sh -lc 'pip install -q ruff; ruff check .'
+
+migrate:     ## run alembic migrations
+\tdocker compose exec api alembic upgrade head
+
+rev:         ## make new migration: make rev m="your message"
+\tdocker compose exec api alembic revision --autogenerate -m "$(m)"
