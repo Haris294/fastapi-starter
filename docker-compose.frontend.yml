@@ -1,0 +1,18 @@
+services:
+  web:
+    image: node:20-alpine
+    working_dir: /app
+    environment:
+      - VITE_PROXY_TARGET=http://api:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./web:/app
+      - web_node_modules:/app/node_modules
+    depends_on:
+      api:
+        condition: service_healthy
+    command: sh -lc "npm ci || npm i && npm run dev -- --host"
+
+volumes:
+  web_node_modules:
