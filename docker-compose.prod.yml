@@ -1,0 +1,12 @@
+services:
+  web:
+    build:
+      context: ./web
+      args:
+        # use /api → nginx proxies to api:8000 (no CORS headaches)
+        VITE_API_BASE: /api
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "8080:80"
